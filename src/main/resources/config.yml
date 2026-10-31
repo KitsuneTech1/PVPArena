@@ -1,0 +1,8 @@
+# PVPArena configuration
+# Arenas are stored individually under the arenas/ folder.
+
+# Default respawn countdown (seconds) applied to newly created arenas.
+default-respawn-time: 5
+
+# Default pre-game countdown (seconds) applied to newly created arenas.
+default-countdown-time: 10
