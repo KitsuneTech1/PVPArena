@@ -1,0 +1,25 @@
+name: PVPArena
+version: ${project.version}
+main: com.pvparena.PVPArenaPlugin
+api-version: '26.1.2'
+description: PVP Arena with CTF, Elimination, and FFA modes featuring material cost/wager system
+
+authors:
+  - PVPArena Team
+
+commands:
+  arena:
+    description: Main command for PVP Arena
+    usage: /<command> <subcommand> [args]
+    aliases: [pvp, pvparena]
+
+permissions:
+  pvparena.join:
+    description: Allows joining public arena games
+    default: true
+  pvparena.host:
+    description: Allows hosting matches and using kit editor
+    default: op
+  pvparena.admin:
+    description: Full arena management (create, delete, configure)
+    default: op

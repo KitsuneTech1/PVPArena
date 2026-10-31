@@ -1,0 +1,42 @@
+# PVPArena user-facing messages.
+# Use '&' color codes (e.g. &c for red). {tokens} are filled in at runtime.
+# Any key you remove here falls back to the plugin's built-in default.
+
+error:
+  not-in-arena: "&cYou are not in an arena!"
+  arena-not-found: "&cArena not found!"
+  players-only: "&cThis command can only be used by players!"
+  no-permission: "&cYou don't have permission to do that!"
+
+join:
+  success: "&aYou joined arena '{arena}'!"
+  team: "&7You are on {color}{team} &7team."
+
+leave:
+  success: "&aYou left the arena."
+
+ready:
+  marked: "&aYou are ready! &7({ready}/{total})"
+  all: "&aAll players are ready! Starting the match..."
+
+match:
+  victory-title: "&a&lVICTORY!"
+  victory-subtitle: "&eYour team won!"
+  defeat-title: "&c&lDEFEAT"
+  defeat-subtitle: "&7Better luck next time!"
+  wager-won: "&6You won the wager pot!"
+
+ctf:
+  captured: "{color}{player} &6&lCAPTURED &7a flag!"
+  score: "&cRed: {red} &7| &9Blue: {blue}"
+
+stats:
+  header: "&6&l=== STATS: {player} ==="
+  line: "&7{stat}: &f{value}"
+  none: "&7No stats recorded for {player}."
+
+leaderboard:
+  header: "&6&l=== TOP {stat} ==="
+  line: "&e{rank}. &f{player} &7- &f{value}"
+  empty: "&7No stats recorded yet."
+  usage: "&cUsage: /arena leaderboard <kills|wins|captures>"
