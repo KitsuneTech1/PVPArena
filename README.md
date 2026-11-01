@@ -5,8 +5,8 @@
 Team PVP arenas with Capture the Flag, Elimination, and Free for All, plus a material cost and wager system.
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
-![Paper](https://img.shields.io/badge/paper-1.21.1-brightgreen.svg)
-![Java](https://img.shields.io/badge/java-21-orange.svg)
+![Paper](https://img.shields.io/badge/paper-26.1.2-brightgreen.svg)
+![Java](https://img.shields.io/badge/java-25-orange.svg)
 
 ## What it does
 
@@ -108,8 +108,8 @@ OP players automatically have all permissions.
 
 ### What you need
 
-- A Spigot or Paper server matching api-version 1.21 (Paper recommended). Download it from https://papermc.io/downloads
-- Java 21 or newer. Download it from https://adoptium.net. Check what you have with `java -version` in a terminal.
+- A Paper server compatible with API version 26.1.2. Download it from https://papermc.io/downloads.
+- Java 25 or newer. Download it from https://adoptium.net. Check what you have with `java -version` in a terminal.
 - This plugin will not work on vanilla Minecraft or on Realms. You need a Spigot/Paper server you host yourself.
 
 ### Step by step
@@ -120,7 +120,7 @@ Go to the [latest release](https://github.com/KitsuneTech1/PVPArena/releases/lat
 
 **Option B: build from source**
 
-1. Install a JDK 21+ from https://adoptium.net if you don't have one.
+1. Install a JDK 25+ from https://adoptium.net if you don't have one.
 2. Clone the repo (`git clone https://github.com/KitsuneTech1/PVPArena.git`) or click "Code > Download ZIP" on GitHub and unzip it.
 3. From the project folder, run `mvn package`.
 4. The built jar will be in `target\PVPArena-1.0.0.jar`.
@@ -135,7 +135,7 @@ Then, for both options:
 
 **Troubleshooting:**
 
-- Console says "Unsupported api-version" or the plugin fails to enable: your server is not on Paper/Spigot 1.21.x. Update your server jar to match.
+- Console says "Unsupported api-version" or the plugin fails to enable: your server is not compatible with Paper API 26.1.2. Update your server jar to match.
 - Plugin doesn't show up in `/plugins`: make sure the jar is directly inside the `plugins` folder, not in a subfolder, and that you fully restarted rather than used `/reload`.
 - "You do not have permission" when running arena commands: OP players get every permission automatically. Non-OP players need `pvparena.host` to host matches or `pvparena.admin` to manage arenas, granted through your permissions plugin (like LuckPerms).
 

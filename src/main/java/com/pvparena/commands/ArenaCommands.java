@@ -555,6 +555,11 @@ public class ArenaCommands implements CommandExecutor, TabCompleter {
             }
         }
 
+        if (arena.getPlayerCount() >= arena.getMaxPlayers()) {
+            sender.sendMessage("§cThis arena is full!");
+            return;
+        }
+
         // Save inventory
         plugin.getInventoryManager().saveInventory(player);
 
