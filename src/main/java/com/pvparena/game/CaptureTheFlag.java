@@ -119,20 +119,20 @@ public class CaptureTheFlag extends GameMode {
     /**
      * Called when a player tries to pick up a flag.
      */
-    public void tryPickupFlag(Player player, String flagTeam) {
+    public boolean tryPickupFlag(Player player, String flagTeam) {
         String playerTeam = arena.getTeam(player);
-        if (playerTeam == null)
-            return;
+        if (playerTeam == null || (!"red".equals(flagTeam) && !"blue".equals(flagTeam)))
+            return false;
 
         // Can only pick up enemy flag
         if (playerTeam.equals(flagTeam)) {
             player.sendMessage("§cYou can't pick up your own flag!");
-            return;
+            return false;
         }
 
         // Already carrying a flag?
         if (flagCarriers.containsKey(player.getUniqueId())) {
-            return;
+            return false;
         }
 
         // Pick up the flag
@@ -161,6 +161,7 @@ public class CaptureTheFlag extends GameMode {
         for (Player p : getActivePlayers()) {
             p.sendMessage(color + player.getName() + " §7picked up the " + color + flagTeam.toUpperCase() + " §7flag!");
         }
+        return true;
     }
 
     /**

@@ -81,11 +81,11 @@ public class InventoryManager {
         inv.setArmorContents(saved.armor);
         inv.setItemInOffHand(saved.offHand);
 
-        // Restore stats
-        player.setTotalExperience(0);
+        // Restore stats. The level, progress, and total are saved together;
+        // adding total experience after setting the level would double-count it.
         player.setLevel(saved.level);
         player.setExp(saved.expProgress);
-        player.giveExp(saved.exp);
+        player.setTotalExperience(saved.exp);
         player.setHealth(Math.min(saved.health, player.getMaxHealth()));
         player.setFoodLevel(saved.foodLevel);
         player.setSaturation(saved.saturation);
@@ -142,7 +142,7 @@ public class InventoryManager {
      * Restores all saved inventories (called on plugin disable).
      */
     public void restoreAllInventories() {
-        for (UUID uuid : savedInventories.keySet()) {
+        for (UUID uuid : new java.util.ArrayList<>(savedInventories.keySet())) {
             Player player = plugin.getServer().getPlayer(uuid);
             if (player != null && player.isOnline()) {
                 restoreInventory(player);

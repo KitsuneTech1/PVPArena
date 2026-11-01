@@ -46,17 +46,28 @@ public class FlagListener implements Listener {
         // Determine which flag this is
         String flagTeam = getFlagTeam(arena, block.getLocation());
         if (flagTeam == null) {
+            flagTeam = getDroppedFlagTeam(ctf, block.getLocation());
+        }
+        if (flagTeam == null) {
             return; // Not a game flag
+        }
+
+        String playerTeam = arena.getTeam(player);
+        if (playerTeam == null) {
+            return;
         }
 
         // Cancel the break - we handle flag pickup differently
         event.setCancelled(true);
 
-        // Try to pick up the flag
-        ctf.tryPickupFlag(player, flagTeam);
-
-        // Remove the banner block
-        block.setType(Material.AIR);
+        if (playerTeam.equals(flagTeam)) {
+            if (!ctf.isFlagAtBase(flagTeam)) {
+                ctf.tryReturnFlag(player, flagTeam);
+                block.setType(Material.AIR);
+            }
+        } else if (ctf.tryPickupFlag(player, flagTeam)) {
+            block.setType(Material.AIR);
+        }
     }
 
     @EventHandler
@@ -103,8 +114,9 @@ public class FlagListener implements Listener {
             }
         } else {
             // Enemy flag - try to pick up
-            ctf.tryPickupFlag(player, flagTeam);
-            block.setType(Material.AIR);
+            if (ctf.tryPickupFlag(player, flagTeam)) {
+                block.setType(Material.AIR);
+            }
         }
 
         event.setCancelled(true);
