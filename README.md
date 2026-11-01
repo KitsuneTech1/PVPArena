@@ -1,8 +1,8 @@
 <p align="center"><a href="https://kitsunetechnologies.org/work"><img src="https://raw.githubusercontent.com/KitsuneTech1/.github/main/assets/kitsune-banner.svg" alt="Built by Kitsune Technologies" width="760"></a></p>
 
-# PVPArena
+# Arena Foundry
 
-Team PVP arenas with Capture the Flag, Elimination, and Free for All, plus a material cost and wager system.
+Team PVP arenas with Capture the Flag, Elimination, and Free for All, plus a material cost and wager system. (Repo: `PVPArena`)
 
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Paper](https://img.shields.io/badge/paper-26.1.2-brightgreen.svg)
