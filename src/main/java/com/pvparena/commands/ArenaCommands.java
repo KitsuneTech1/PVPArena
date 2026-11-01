@@ -698,6 +698,11 @@ public class ArenaCommands implements CommandExecutor, TabCompleter {
             return;
         }
 
+        if (arena.isSpectator(player)) {
+            sender.sendMessage("§cSpectators cannot ready up.");
+            return;
+        }
+
         var messages = plugin.getMessageManager();
         arena.setReady(player);
         player.sendMessage(messages.format("ready.marked",
@@ -857,6 +862,7 @@ public class ArenaCommands implements CommandExecutor, TabCompleter {
         sender.sendMessage("§6§l=== PVP ARENA HELP ===");
         sender.sendMessage("§e/arena list §7- List all arenas");
         sender.sendMessage("§e/arena join <arena> [team] §7- Join an arena");
+        sender.sendMessage("§e/arena ready §7- Mark yourself ready in the lobby");
         sender.sendMessage("§e/arena leave §7- Leave current arena");
         sender.sendMessage("§e/arena info <arena> §7- View arena info");
         sender.sendMessage("§e/arena stats [player] §7- View lifetime stats");

@@ -154,7 +154,9 @@ public class Arena {
 
     // Ready system
     public void setReady(Player player) {
-        readyPlayers.add(player.getUniqueId());
+        if (allPlayers.contains(player.getUniqueId())) {
+            readyPlayers.add(player.getUniqueId());
+        }
     }
 
     public void setNotReady(Player player) {
