@@ -43,24 +43,21 @@ public class ChestManager {
      */
     public int countAvailableLives(Location chestLocation, KitConfig kit) {
         Inventory inv = getChestInventory(chestLocation);
-        if (inv == null || kit == null)
-            return 0;
-
-        List<ItemStack> requiredItems = kit.getAllItems();
-        if (requiredItems.isEmpty())
+        Map<Material, Integer> requiredItems = aggregateRequiredItems(kit);
+        if (inv == null || requiredItems == null || requiredItems.isEmpty())
             return 0;
 
         // Count how many complete sets we can make
-        int lives = Integer.MAX_VALUE;
+        long lives = Long.MAX_VALUE;
 
-        for (ItemStack required : requiredItems) {
-            int available = countItem(inv, required.getType());
-            int neededPerLife = required.getAmount();
-            int possibleLives = available / neededPerLife;
+        for (Map.Entry<Material, Integer> required : requiredItems.entrySet()) {
+            long available = countItem(inv, required.getKey());
+            long neededPerLife = required.getValue();
+            long possibleLives = available / neededPerLife;
             lives = Math.min(lives, possibleLives);
         }
 
-        return lives == Integer.MAX_VALUE ? 0 : lives;
+        return lives == Long.MAX_VALUE ? 0 : (int) Math.min(lives, Integer.MAX_VALUE);
     }
 
     /**
@@ -68,21 +65,20 @@ public class ChestManager {
      */
     public boolean consumeLifeFromChest(Location chestLocation, KitConfig kit) {
         Inventory inv = getChestInventory(chestLocation);
-        if (inv == null || kit == null)
+        Map<Material, Integer> requiredItems = aggregateRequiredItems(kit);
+        if (inv == null || requiredItems == null || requiredItems.isEmpty())
             return false;
 
-        List<ItemStack> requiredItems = kit.getAllItems();
-
         // First verify we have enough
-        for (ItemStack required : requiredItems) {
-            if (countItem(inv, required.getType()) < required.getAmount()) {
+        for (Map.Entry<Material, Integer> required : requiredItems.entrySet()) {
+            if (countItem(inv, required.getKey()) < required.getValue()) {
                 return false;
             }
         }
 
         // Consume items
-        for (ItemStack required : requiredItems) {
-            removeItems(inv, required.getType(), required.getAmount());
+        for (Map.Entry<Material, Integer> required : requiredItems.entrySet()) {
+            removeItems(inv, required.getKey(), required.getValue());
         }
 
         return true;
@@ -157,16 +153,31 @@ public class ChestManager {
 
         // Hand out the pot, split round-robin across all winners
         List<Player> winnerList = new ArrayList<>(winners);
+        List<ItemStack> leftovers = new ArrayList<>();
         int index = 0;
         for (ItemStack item : pot) {
             Player winner = winnerList.get(index % winnerList.size());
-            winner.getInventory().addItem(item);
-            awarded.add(item);
+            int originalAmount = item.getAmount();
+            Map<Integer, ItemStack> overflow = winner.getInventory().addItem(item.clone());
+            int overflowAmount = 0;
+            for (ItemStack leftover : overflow.values()) {
+                overflowAmount += leftover.getAmount();
+                leftovers.add(leftover.clone());
+            }
+            int deliveredAmount = originalAmount - overflowAmount;
+            if (deliveredAmount > 0) {
+                ItemStack delivered = item.clone();
+                delivered.setAmount(deliveredAmount);
+                awarded.add(delivered);
+            }
             index++;
         }
 
-        // Empty the pot now that it has been paid out
+        // Remove only the paid-out contents. Any overflow remains in the pot.
         inv.clear();
+        for (ItemStack leftover : leftovers) {
+            inv.addItem(leftover);
+        }
 
         return awarded;
     }
@@ -216,8 +227,8 @@ public class ChestManager {
     /**
      * Counts total items of a specific type in an inventory.
      */
-    private int countItem(Inventory inv, Material material) {
-        int count = 0;
+    private long countItem(Inventory inv, Material material) {
+        long count = 0;
         for (ItemStack item : inv.getContents()) {
             if (item != null && item.getType() == material) {
                 count += item.getAmount();
@@ -244,6 +255,25 @@ public class ChestManager {
                 }
             }
         }
+    }
+
+    private Map<Material, Integer> aggregateRequiredItems(KitConfig kit) {
+        if (kit == null) {
+            return null;
+        }
+
+        Map<Material, Integer> required = new EnumMap<>(Material.class);
+        for (ItemStack item : kit.getAllItems()) {
+            if (item == null || item.getType() == Material.AIR || item.getAmount() <= 0) {
+                return null;
+            }
+            long total = (long) required.getOrDefault(item.getType(), 0) + item.getAmount();
+            if (total > Integer.MAX_VALUE) {
+                return null;
+            }
+            required.put(item.getType(), (int) total);
+        }
+        return required;
     }
 
     /**

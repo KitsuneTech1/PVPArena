@@ -40,7 +40,10 @@ public class CountdownTask extends BukkitRunnable {
             Player player = plugin.getServer().getPlayer(uuid);
             if (player != null) {
                 // Teleport to spawn
-                player.teleport(arena.getSpawnForPlayer(player));
+                org.bukkit.Location spawn = arena.getSpawnForPlayer(player);
+                if (spawn != null) {
+                    player.teleport(spawn);
+                }
 
                 // Freeze player (slowness + jump boost negative)
                 player.addPotionEffect(new PotionEffect(PotionEffectType.SLOWNESS,

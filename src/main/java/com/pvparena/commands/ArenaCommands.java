@@ -26,6 +26,7 @@ public class ArenaCommands implements CommandExecutor, TabCompleter {
 
     private static final String PERM_ADMIN = "pvparena.admin";
     private static final String PERM_HOST = "pvparena.host";
+    private static final String PERM_JOIN = "pvparena.join";
 
     private final PVPArenaPlugin plugin;
 
@@ -88,6 +89,10 @@ public class ArenaCommands implements CommandExecutor, TabCompleter {
         }
 
         String name = args[1];
+        if (!com.pvparena.arena.ArenaManager.isValidArenaName(name)) {
+            sender.sendMessage("§cInvalid arena name. Use 1-32 letters, numbers, '-' or '_'.");
+            return;
+        }
         Arena arena = plugin.getArenaManager().createArena(name);
 
         if (arena != null) {
@@ -414,6 +419,10 @@ public class ArenaCommands implements CommandExecutor, TabCompleter {
 
         try {
             int seconds = Integer.parseInt(args[2]);
+            if (seconds < 0 || seconds > Arena.MAX_CONFIG_SECONDS) {
+                sender.sendMessage("§cSeconds must be between 0 and " + Arena.MAX_CONFIG_SECONDS + ".");
+                return;
+            }
             arena.setRespawnTime(seconds);
             plugin.getArenaManager().saveArena(arena);
             sender.sendMessage("§aRespawn time set to " + seconds + " seconds!");
@@ -438,6 +447,10 @@ public class ArenaCommands implements CommandExecutor, TabCompleter {
 
         try {
             int seconds = Integer.parseInt(args[2]);
+            if (seconds < 0 || seconds > Arena.MAX_CONFIG_SECONDS) {
+                sender.sendMessage("§cSeconds must be between 0 and " + Arena.MAX_CONFIG_SECONDS + ".");
+                return;
+            }
             arena.setCountdownTime(seconds);
             plugin.getArenaManager().saveArena(arena);
             sender.sendMessage("§aCountdown time set to " + seconds + " seconds!");
@@ -531,6 +544,8 @@ public class ArenaCommands implements CommandExecutor, TabCompleter {
             sender.sendMessage("§cThis command can only be used by players!");
             return;
         }
+        if (!hasPermission(sender, PERM_JOIN))
+            return;
         if (args.length < 2) {
             sender.sendMessage("§cUsage: /arena join <arena> [team]");
             return;
@@ -624,6 +639,10 @@ public class ArenaCommands implements CommandExecutor, TabCompleter {
         if (arena == null) {
             sender.sendMessage(plugin.getMessageManager().get("error.not-in-arena"));
             return;
+        }
+
+        if (arena.getActiveGameMode() != null) {
+            arena.getActiveGameMode().handlePlayerQuit(player);
         }
 
         // Restore inventory

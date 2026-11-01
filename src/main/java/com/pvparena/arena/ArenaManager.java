@@ -9,13 +9,17 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.logging.Level;
+import java.util.regex.Pattern;
 
 /**
  * Manages all arenas - creation, deletion, saving, and loading.
  */
 public class ArenaManager {
+
+    private static final Pattern ARENA_NAME_PATTERN = Pattern.compile("[A-Za-z0-9][A-Za-z0-9_-]{0,31}");
 
     private final PVPArenaPlugin plugin;
     private final Map<String, Arena> arenas;
@@ -35,12 +39,17 @@ public class ArenaManager {
      * Creates a new arena with the given name.
      */
     public Arena createArena(String name) {
-        if (arenas.containsKey(name.toLowerCase())) {
+        if (!isValidArenaName(name)) {
+            return null;
+        }
+
+        String key = normalizeName(name);
+        if (arenas.containsKey(key)) {
             return null; // Arena already exists
         }
 
         Arena arena = new Arena(name);
-        arenas.put(name.toLowerCase(), arena);
+        arenas.put(key, arena);
         saveArena(arena);
         return arena;
     }
@@ -49,22 +58,30 @@ public class ArenaManager {
      * Deletes an arena by name.
      */
     public boolean deleteArena(String name) {
-        Arena arena = arenas.remove(name.toLowerCase());
-        if (arena != null) {
-            File arenaFile = new File(arenasFolder, name.toLowerCase() + ".yml");
-            if (arenaFile.exists()) {
-                arenaFile.delete();
-            }
-            return true;
+        if (!isValidArenaName(name)) {
+            return false;
         }
-        return false;
+
+        String key = normalizeName(name);
+        Arena arena = arenas.get(key);
+        if (arena == null || arena.getState() != ArenaState.IDLE
+                || !arena.getAllPlayers().isEmpty() || !arena.getSpectators().isEmpty()) {
+            return false;
+        }
+
+        File arenaFile = arenaFile(name);
+        if (arenaFile != null && arenaFile.exists() && !arenaFile.delete()) {
+            return false;
+        }
+        arenas.remove(key);
+        return true;
     }
 
     /**
      * Gets an arena by name.
      */
     public Arena getArena(String name) {
-        return arenas.get(name.toLowerCase());
+        return isValidArenaName(name) ? arenas.get(normalizeName(name)) : null;
     }
 
     /**
@@ -78,7 +95,7 @@ public class ArenaManager {
      * Checks if an arena exists.
      */
     public boolean arenaExists(String name) {
-        return arenas.containsKey(name.toLowerCase());
+        return isValidArenaName(name) && arenas.containsKey(normalizeName(name));
     }
 
     /**
@@ -94,7 +111,15 @@ public class ArenaManager {
      * Saves a single arena to disk.
      */
     public void saveArena(Arena arena) {
-        File arenaFile = new File(arenasFolder, arena.getName().toLowerCase() + ".yml");
+        if (arena == null || !isValidArenaName(arena.getName())) {
+            plugin.getLogger().warning("Refusing to save arena with an invalid name.");
+            return;
+        }
+
+        File arenaFile = arenaFile(arena.getName());
+        if (arenaFile == null) {
+            return;
+        }
         FileConfiguration config = YamlConfiguration.loadConfiguration(arenaFile);
 
         config.set("name", arena.getName());
@@ -174,8 +199,10 @@ public class ArenaManager {
         FileConfiguration config = YamlConfiguration.loadConfiguration(file);
 
         String name = config.getString("name");
-        if (name == null)
+        if (!isValidArenaName(name)) {
+            plugin.getLogger().warning("Ignoring arena file with an invalid name: " + file.getName());
             return;
+        }
 
         Arena arena = new Arena(name);
 
@@ -247,7 +274,7 @@ public class ArenaManager {
             arena.setKitConfig(kit);
         }
 
-        arenas.put(name.toLowerCase(), arena);
+        arenas.put(normalizeName(name), arena);
     }
 
     /**
@@ -297,7 +324,7 @@ public class ArenaManager {
     }
 
     private void saveLocation(FileConfiguration config, String path, Location location) {
-        if (location == null) {
+        if (location == null || location.getWorld() == null) {
             config.set(path, null);
             return;
         }
@@ -329,6 +356,33 @@ public class ArenaManager {
         float yaw = (float) config.getDouble(path + ".yaw");
         float pitch = (float) config.getDouble(path + ".pitch");
 
+        if (!Double.isFinite(x) || !Double.isFinite(y) || !Double.isFinite(z)
+                || !Float.isFinite(yaw) || !Float.isFinite(pitch)) {
+            return null;
+        }
+
         return new Location(world, x, y, z, yaw, pitch);
+    }
+
+    public static boolean isValidArenaName(String name) {
+        if (name == null || !ARENA_NAME_PATTERN.matcher(name).matches()) {
+            return false;
+        }
+
+        String normalized = normalizeName(name);
+        return !normalized.equals("con") && !normalized.equals("prn")
+                && !normalized.equals("aux") && !normalized.equals("nul")
+                && !normalized.matches("com[1-9]") && !normalized.matches("lpt[1-9]");
+    }
+
+    private static String normalizeName(String name) {
+        return name.toLowerCase(Locale.ROOT);
+    }
+
+    private File arenaFile(String name) {
+        if (!isValidArenaName(name)) {
+            return null;
+        }
+        return new File(arenasFolder, normalizeName(name) + ".yml");
     }
 }

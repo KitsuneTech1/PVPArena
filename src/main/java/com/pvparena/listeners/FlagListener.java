@@ -63,10 +63,8 @@ public class FlagListener implements Listener {
         if (playerTeam.equals(flagTeam)) {
             if (!ctf.isFlagAtBase(flagTeam)) {
                 ctf.tryReturnFlag(player, flagTeam);
-                block.setType(Material.AIR);
             }
         } else if (ctf.tryPickupFlag(player, flagTeam)) {
-            block.setType(Material.AIR);
         }
     }
 
@@ -110,12 +108,10 @@ public class FlagListener implements Listener {
         if (playerTeam.equals(flagTeam)) {
             if (!ctf.isFlagAtBase(flagTeam)) {
                 ctf.tryReturnFlag(player, flagTeam);
-                block.setType(Material.AIR);
             }
         } else {
             // Enemy flag - try to pick up
             if (ctf.tryPickupFlag(player, flagTeam)) {
-                block.setType(Material.AIR);
             }
         }
 

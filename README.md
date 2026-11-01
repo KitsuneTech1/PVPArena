@@ -25,7 +25,7 @@ PVPArena runs configurable arena matches with three game modes. Instead of pre-m
 - Survival inventory saved and restored after the match
 - Configurable respawn timer with countdown display
 - Sound effects for match events
-- Post-match stats on signs: kills, deaths, captures, MVP, total items consumed
+- Post-match stats on signs: kills, deaths, captures, and MVP
 
 ## Quick start
 
