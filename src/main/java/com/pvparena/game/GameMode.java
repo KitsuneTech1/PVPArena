@@ -65,8 +65,9 @@ public abstract class GameMode {
         plugin.getSoundManager().playDeath(victim);
 
         // Send items to trash
-        plugin.getChestManager().addToTrashChests(arena, victim.getInventory().getContents());
+        plugin.getChestManager().addToTrashChests(arena, victim.getInventory().getStorageContents());
         plugin.getChestManager().addToTrashChests(arena, victim.getInventory().getArmorContents());
+        plugin.getChestManager().addToTrashChests(arena, victim.getInventory().getExtraContents());
 
         // Clear inventory
         victim.getInventory().clear();
@@ -90,7 +91,10 @@ public abstract class GameMode {
             plugin.getSoundManager().playRespawn(player);
 
             // Teleport to spawn
-            player.teleport(arena.getSpawnForPlayer(player));
+            org.bukkit.Location spawn = arena.getSpawnForPlayer(player);
+            if (spawn != null) {
+                player.teleport(spawn);
+            }
 
             onPlayerRespawn(player);
         } else {
@@ -274,6 +278,13 @@ public abstract class GameMode {
      */
     public boolean isGameEnded() {
         return gameEnded;
+    }
+
+    /**
+     * Gives a game mode a chance to clean up state when a participant quits.
+     */
+    public void handlePlayerQuit(Player player) {
+        // Most modes have no participant-specific state to clean up.
     }
 
     // Abstract methods for subclasses

@@ -23,12 +23,13 @@ public class PlayerMoveListener implements Listener {
 
     @EventHandler
     public void onPlayerMove(PlayerMoveEvent event) {
-        // Only check if actually moved blocks
-        if (event.getFrom().getBlockX() == event.getTo().getBlockX()
-                && event.getFrom().getBlockY() == event.getTo().getBlockY()
-                && event.getFrom().getBlockZ() == event.getTo().getBlockZ()) {
+        if (event.getTo() == null) {
             return;
         }
+
+        boolean changedBlock = event.getFrom().getBlockX() != event.getTo().getBlockX()
+                || event.getFrom().getBlockY() != event.getTo().getBlockY()
+                || event.getFrom().getBlockZ() != event.getTo().getBlockZ();
 
         Player player = event.getPlayer();
         Arena arena = findPlayerArena(player);
@@ -38,7 +39,9 @@ public class PlayerMoveListener implements Listener {
 
         // Check boundary violation
         if (arena.getState() == ArenaState.ACTIVE) {
-            checkBoundary(player, arena, event.getTo());
+            if (changedBlock) {
+                checkBoundary(player, arena, event.getTo());
+            }
 
             // Check capture zones for CTF
             checkCaptureZones(player, arena, event.getTo());
@@ -51,6 +54,10 @@ public class PlayerMoveListener implements Listener {
         Arena arena = findPlayerArena(player);
 
         if (arena != null) {
+            if (arena.getActiveGameMode() != null) {
+                arena.getActiveGameMode().handlePlayerQuit(player);
+            }
+
             // Restore inventory
             plugin.getInventoryManager().restoreInventory(player);
 
@@ -123,7 +130,8 @@ public class PlayerMoveListener implements Listener {
      * Checks if a location is near another location.
      */
     private boolean isNearLocation(Location loc1, Location loc2, double radius) {
-        if (loc1.getWorld() != loc2.getWorld())
+        if (loc1 == null || loc2 == null || loc1.getWorld() == null || loc2.getWorld() == null
+                || loc1.getWorld() != loc2.getWorld())
             return false;
         return loc1.distanceSquared(loc2) <= radius * radius;
     }

@@ -13,6 +13,9 @@ import java.util.*;
  */
 public class Arena {
 
+    public static final int MAX_CONFIG_SECONDS = 3_600;
+    public static final int MAX_PLAYERS = 200;
+
     private final String name;
     private ArenaState state;
     private GameModeType gameModeType;
@@ -265,6 +268,12 @@ public class Arena {
             return true; // No boundaries set
         }
 
+        if (location == null || corner1.getWorld() == null || corner2.getWorld() == null
+                || location.getWorld() == null || corner1.getWorld() != corner2.getWorld()
+                || location.getWorld() != corner1.getWorld()) {
+            return false;
+        }
+
         double minX = Math.min(corner1.getX(), corner2.getX());
         double maxX = Math.max(corner1.getX(), corner2.getX());
         double minY = Math.min(corner1.getY(), corner2.getY());
@@ -325,7 +334,7 @@ public class Arena {
     }
 
     public void setRespawnTime(int respawnTime) {
-        this.respawnTime = respawnTime;
+        this.respawnTime = Math.max(0, Math.min(MAX_CONFIG_SECONDS, respawnTime));
     }
 
     public int getCountdownTime() {
@@ -333,7 +342,7 @@ public class Arena {
     }
 
     public void setCountdownTime(int countdownTime) {
-        this.countdownTime = countdownTime;
+        this.countdownTime = Math.max(0, Math.min(MAX_CONFIG_SECONDS, countdownTime));
     }
 
     public int getMaxPlayers() {
@@ -341,7 +350,10 @@ public class Arena {
     }
 
     public void setMaxPlayers(int maxPlayers) {
-        this.maxPlayers = maxPlayers;
+        this.maxPlayers = Math.max(1, Math.min(MAX_PLAYERS, maxPlayers));
+        if (minPlayers > this.maxPlayers) {
+            minPlayers = this.maxPlayers;
+        }
     }
 
     public int getMinPlayers() {
@@ -349,7 +361,7 @@ public class Arena {
     }
 
     public void setMinPlayers(int minPlayers) {
-        this.minPlayers = minPlayers;
+        this.minPlayers = Math.max(1, Math.min(this.maxPlayers, minPlayers));
     }
 
     // CTF Flags

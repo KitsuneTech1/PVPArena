@@ -5,6 +5,7 @@ import com.pvparena.arena.Arena;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
@@ -33,6 +34,7 @@ public class CaptureTheFlag extends GameMode {
     private boolean blueFlagAtBase;
     private Location droppedRedFlag;
     private Location droppedBlueFlag;
+    private final Map<String, BlockData> originalBlocks;
 
     public CaptureTheFlag(PVPArenaPlugin plugin, Arena arena) {
         super(plugin, arena);
@@ -41,6 +43,7 @@ public class CaptureTheFlag extends GameMode {
         this.blueScore = 0;
         this.redFlagAtBase = true;
         this.blueFlagAtBase = true;
+        this.originalBlocks = new HashMap<>();
     }
 
     @Override
@@ -59,23 +62,12 @@ public class CaptureTheFlag extends GameMode {
 
     @Override
     protected void onPlayerDeath(Player victim, Player killer) {
-        // Check if victim was carrying a flag
-        String carriedFlag = flagCarriers.remove(victim.getUniqueId());
-        if (carriedFlag != null) {
-            // Drop the flag at death location
-            dropFlag(carriedFlag, victim.getLocation());
+        dropCarriedFlag(victim, true);
+    }
 
-            // Remove carrier effects
-            victim.removePotionEffect(PotionEffectType.SLOWNESS);
-            victim.removePotionEffect(PotionEffectType.GLOWING);
-
-            // Announce
-            String color = carriedFlag.equals("red") ? "§c" : "§9";
-            for (Player p : getActivePlayers()) {
-                p.sendMessage(
-                        color + victim.getName() + " §7dropped the " + color + carriedFlag.toUpperCase() + " §7flag!");
-            }
-        }
+    @Override
+    public void handlePlayerQuit(Player player) {
+        dropCarriedFlag(player, false);
     }
 
     @Override
@@ -93,6 +85,7 @@ public class CaptureTheFlag extends GameMode {
             removeFlag(droppedRedFlag);
         if (droppedBlueFlag != null)
             removeFlag(droppedBlueFlag);
+        originalBlocks.clear();
     }
 
     @Override
@@ -139,9 +132,11 @@ public class CaptureTheFlag extends GameMode {
         flagCarriers.put(player.getUniqueId(), flagTeam);
 
         if (flagTeam.equals("red")) {
+            removeFlag(droppedRedFlag != null ? droppedRedFlag : arena.getRedFlagLocation());
             redFlagAtBase = false;
             droppedRedFlag = null;
         } else {
+            removeFlag(droppedBlueFlag != null ? droppedBlueFlag : arena.getBlueFlagLocation());
             blueFlagAtBase = false;
             droppedBlueFlag = null;
         }
@@ -288,6 +283,10 @@ public class CaptureTheFlag extends GameMode {
             return;
 
         Block block = location.getBlock();
+        String key = blockKey(location);
+        if (key != null && !originalBlocks.containsKey(key)) {
+            originalBlocks.put(key, block.getBlockData().clone());
+        }
         Material bannerType = team.equals("red") ? Material.RED_BANNER : Material.BLUE_BANNER;
         block.setType(bannerType);
     }
@@ -298,7 +297,41 @@ public class CaptureTheFlag extends GameMode {
     private void removeFlag(Location location) {
         if (location == null)
             return;
-        location.getBlock().setType(Material.AIR);
+        Block block = location.getBlock();
+        String key = blockKey(location);
+        if (key == null || !originalBlocks.containsKey(key)) {
+            return;
+        }
+        BlockData original = originalBlocks.remove(key);
+        block.setBlockData(original);
+    }
+
+    private void dropCarriedFlag(Player player, boolean announce) {
+        String carriedFlag = flagCarriers.remove(player.getUniqueId());
+        if (carriedFlag == null) {
+            return;
+        }
+
+        dropFlag(carriedFlag, player.getLocation());
+        player.removePotionEffect(PotionEffectType.SLOWNESS);
+        player.removePotionEffect(PotionEffectType.GLOWING);
+        player.getInventory().setHelmet(null);
+
+        if (announce) {
+            String color = carriedFlag.equals("red") ? "§c" : "§9";
+            for (Player p : getActivePlayers()) {
+                p.sendMessage(color + player.getName() + " §7dropped the " + color
+                        + carriedFlag.toUpperCase() + " §7flag!");
+            }
+        }
+    }
+
+    private String blockKey(Location location) {
+        if (location == null || location.getWorld() == null) {
+            return null;
+        }
+        return location.getWorld().getUID() + ":" + location.getBlockX() + ":"
+                + location.getBlockY() + ":" + location.getBlockZ();
     }
 
     /**
