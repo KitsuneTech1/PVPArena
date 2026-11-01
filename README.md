@@ -39,7 +39,7 @@ PVPArena runs configurable arena matches with three game modes. Instead of pre-m
 /arena setcorner2 myarena
 ```
 
-Set up chests (look at the chest first):
+Set up chests (look at each chest from within five blocks first):
 
 ```
 /arena setsupply myarena red
@@ -60,8 +60,16 @@ For CTF mode:
 
 Play:
 
+Use at least two players, with one player on each team. Run the join command once for each player:
+
 ```
+# player 1
 /arena join myarena red
+
+# player 2
+/arena join myarena blue
+
+# host
 /arena kit
 /arena start
 ```
@@ -77,6 +85,7 @@ All commands run through `/arena` (aliases `/pvp`, `/pvparena`).
 | `/arena leave` | Leave the current arena |
 | `/arena info <arena>` | View arena info |
 | `/arena kit` | Open the kit editor (host) |
+| `/arena ready` | Mark the current team player ready in the lobby |
 | `/arena start` | Start the game (host) |
 | `/arena create <name>` | Create an arena |
 | `/arena delete <name>` | Delete an arena |

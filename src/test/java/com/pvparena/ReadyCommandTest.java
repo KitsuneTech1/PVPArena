@@ -63,4 +63,22 @@ class ReadyCommandTest {
         assertTrue(player.nextMessage().toLowerCase().contains("not in an arena"),
                 "player not in an arena should be told so");
     }
+
+    @Test
+    void readyCommandRejectsSpectators() {
+        Arena arena = plugin.getArenaManager().createArena("spectatorready");
+        arena.setState(ArenaState.LOBBY);
+
+        PlayerMock spectator = server.addPlayer("Spectator");
+        arena.addSpectator(spectator);
+
+        ArenaCommands commands = new ArenaCommands(plugin);
+        boolean handled = commands.onCommand(spectator, null, "arena", new String[] { "ready" });
+
+        assertTrue(handled, "command should be handled");
+        assertFalse(arena.isReady(spectator), "spectators must not be marked ready");
+        assertEquals(0, arena.getReadyCount(), "spectators must not affect ready count");
+        assertTrue(spectator.nextMessage().toLowerCase().contains("spectator"),
+                "spectators should be told they cannot ready up");
+    }
 }
