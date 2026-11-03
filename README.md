@@ -4,6 +4,7 @@
 
 Team PVP arenas with Capture the Flag, Elimination, and Free for All, plus a material cost and wager system. (Repo: `PVPArena`)
 
+[![Build Status](https://github.com/KitsuneTech1/PVPArena/actions/workflows/ci.yml/badge.svg)](https://github.com/KitsuneTech1/PVPArena/actions)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 ![Paper](https://img.shields.io/badge/paper-26.1.2-brightgreen.svg)
 ![Java](https://img.shields.io/badge/java-25-orange.svg)
@@ -72,6 +73,23 @@ Use at least two players, with one player on each team. Run the join command onc
 # host
 /arena kit
 /arena start
+```
+
+
+## Architecture & Mechanics
+
+```mermaid
+flowchart TD
+    A[Setup Arena: Spawns, Boundaries, Chests] --> B[Deposit Gear into Supply & Betting Chests]
+    B --> C[Join Match: CTF / Elimination / Free for All]
+    C --> D[Pre-Game Countdown & Inventory Backup]
+    D --> E[Battle Active]
+    E -->|Player Defeated| F{Supply Chest Has Lives/Gear?}
+    F -- Yes --> G[Respawn with Gear & Deplete Life]
+    F -- No --> H[Eliminate Player & Transfer Gear to Trash Chest]
+    E -->|Objective Complete| I[Match Decided]
+    I --> J[Award Wager Chest to Winners]
+    I --> K[Restore Survival Inventories & Update Stat Signs]
 ```
 
 ## Commands
